@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "buildCommand": "git submodule update --init --recursive && npm run build",
+  "installCommand": "git submodule update --init --recursive && npm ci",
+  "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 10
+    }
+  },
+  "build": {
+    "env": {
+      "NODE_ENV": "production"
+    }
+  },
+  "headers": [
+    {
+      "source": "/models/**",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    }
+  ]
+}
