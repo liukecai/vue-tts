@@ -14,6 +14,7 @@ dist-ssr
 
 # External projects
 whisper-web
+public/models/whisper-tiny
 
 # Editor directories and files
 .vscode/*
