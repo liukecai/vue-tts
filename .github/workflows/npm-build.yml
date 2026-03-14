@@ -41,8 +41,9 @@ jobs:
           npm install
           npm run build
           
-          mkdir -p dist/models
-          cp -r public/models/* dist/models/
+          mkdir -p dist/models/whisper-tiny/onnx
+          cp public/models/whisper-tiny/onnx/encoder_model.onnx dist/models/whisper-tiny/onnx/
+          cp public/models/whisper-tiny/onnx/decoder_model_merged.onnx dist/models/whisper-tiny/onnx/
           
           echo "✅ Verified: Models copied to dist"
           ls -R dist/models
