@@ -6,10 +6,10 @@ mkdir -p public/models/whisper-tiny/onnx
 # Download models from Hugging Face
 MODEL_URL="https://huggingface.co/Xenova/whisper-tiny/resolve/main/onnx"
 
-# Download essential model files
-files=("encoder_model.onnx" "decoder_model_merged.onnx")
+# Download only the required model files to reduce package size
+required_files=("encoder_model.onnx" "decoder_model_merged.onnx")
 
-for file in "${files[@]}"; do
+for file in "${required_files[@]}"; do
     echo "Downloading $file..."
     curl -o "public/models/whisper-tiny/onnx/$file" "$MODEL_URL/$file"
     if [ $? -ne 0 ]; then
@@ -18,4 +18,4 @@ for file in "${files[@]}"; do
     fi
 done
 
-echo "Model download completed successfully!"
+echo "Model download completed successfully! Only required models were downloaded."
