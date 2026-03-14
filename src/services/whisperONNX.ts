@@ -1,5 +1,5 @@
 import { pipeline, env } from '@huggingface/transformers';
-import type { WhisperModelConfig, ModelLoadProgress, InferenceProgress, RecognitionResult } from '../types';
+import type { WhisperModelConfig, ModelLoadProgress, InferenceProgress, RecognitionResult, FileProgress } from '../types';
 
 env.allowLocalModels = true;
 env.useBrowserCache = true;
@@ -7,6 +7,10 @@ env.useBrowserCache = true;
 export class WhisperTransformersService {
   private pipeline: any;
   private inferenceProgressCallback?: (progress: InferenceProgress) => void;
+  private loadStartTime: number = 0;
+  private lastProgressUpdate: number = 0;
+  private lastProgressValue: number = 0;
+  private fileProgressMap: Map<string, FileProgress> = new Map();
 
   constructor(_config: WhisperModelConfig) {
     // Config parameter kept for API compatibility
@@ -17,19 +21,73 @@ export class WhisperTransformersService {
       console.log('[WhisperTransformers] Starting to load model...');
       console.log('[WhisperTransformers] Current pipeline state:', this.pipeline);
       
+      this.loadStartTime = Date.now();
+      this.lastProgressUpdate = this.loadStartTime;
+      this.lastProgressValue = 0;
+      this.fileProgressMap.clear();
+      
       onProgress?.({
         status: 'loading',
         progress: 0,
-        file: 'Loading pipeline...'
+        file: 'Initializing...',
+        stage: 'initialize',
+        fileName: '正在初始化模型加载器...',
+        downloadSpeed: undefined,
+        estimatedTime: undefined,
+        files: []
       });
+      
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       this.pipeline = await pipeline('automatic-speech-recognition', '/models/whisper-tiny', {
         progress_callback: (progress: any) => {
           console.log('[WhisperTransformers] Model load progress:', progress);
+          
+          const currentTime = Date.now();
+          const timeElapsed = (currentTime - this.lastProgressUpdate) / 1000;
+          const progressValue = progress.progress || 0;
+          
+          let downloadSpeed: string | undefined;
+          let estimatedTime: string | undefined;
+          
+          if (progress.status === 'downloading' || progress.status === 'loading' || progress.status === 'progress') {
+            if (timeElapsed > 0.5 && progressValue > this.lastProgressValue) {
+              const progressDiff = progressValue - this.lastProgressValue;
+              const speed = progressDiff / timeElapsed;
+              downloadSpeed = `${speed.toFixed(1)}%`;
+              
+              if (speed > 0) {
+                const remainingProgress = 100 - progressValue;
+                const timeRemaining = remainingProgress / speed;
+                estimatedTime = this.formatTime(timeRemaining);
+              }
+              
+              this.lastProgressUpdate = currentTime;
+              this.lastProgressValue = progressValue;
+            }
+          }
+          
+          const stage = this.mapStatusToStage(progress.status);
+          const fileName = progress.file || this.getFileNameForStage(stage);
+          
+          if (progress.file && progress.loaded !== undefined && progress.total !== undefined) {
+            this.updateFileProgress(progress.file, progress.progress, progress.loaded, progress.total);
+          }
+          
+          const files = Array.from(this.fileProgressMap.values());
+          const overallProgress = this.calculateOverallProgress(files);
+          
           onProgress?.({
             status: progress.status,
-            progress: progress.progress || 0,
-            file: progress.file
+            progress: overallProgress,
+            file: progress.file,
+            stage: stage,
+            fileName: fileName,
+            downloadSpeed: downloadSpeed,
+            estimatedTime: estimatedTime,
+            loaded: progress.loaded,
+            total: progress.total,
+            files: files
           });
         }
       });
@@ -39,16 +97,94 @@ export class WhisperTransformersService {
       onProgress?.({
         status: 'ready',
         progress: 100,
-        file: 'Model loaded'
+        file: 'Model loaded',
+        stage: 'ready',
+        fileName: '模型加载完成，可以开始使用',
+        downloadSpeed: undefined,
+        estimatedTime: undefined,
+        files: Array.from(this.fileProgressMap.values())
       });
     } catch (error) {
       console.error('[WhisperTransformers] Error loading Transformers model:', error);
       onProgress?.({
         status: 'error',
         progress: 0,
-        file: 'Failed to load model'
+        file: 'Failed to load model',
+        stage: 'error',
+        fileName: '模型加载失败，请刷新页面重试',
+        downloadSpeed: undefined,
+        estimatedTime: undefined,
+        files: Array.from(this.fileProgressMap.values())
       });
       throw error;
+    }
+  }
+  
+  private updateFileProgress(fileName: string, progress: number, loaded: number, total: number): void {
+    const existing = this.fileProgressMap.get(fileName);
+    if (existing) {
+      existing.progress = progress;
+      existing.loaded = loaded;
+      existing.total = total;
+      existing.status = progress >= 100 ? 'complete' : 'loading';
+    } else {
+      this.fileProgressMap.set(fileName, {
+        name: fileName,
+        progress: progress,
+        loaded: loaded,
+        total: total,
+        status: progress >= 100 ? 'complete' : 'loading'
+      });
+    }
+  }
+  
+  private calculateOverallProgress(files: FileProgress[]): number {
+    if (files.length === 0) return 0;
+    const totalProgress = files.reduce((sum, file) => sum + file.progress, 0);
+    return totalProgress / files.length;
+  }
+  
+  private mapStatusToStage(status: string): 'download' | 'parse' | 'initialize' | 'ready' | 'error' {
+    switch (status) {
+      case 'downloading':
+        return 'download';
+      case 'loading':
+        return 'parse';
+      case 'ready':
+        return 'ready';
+      case 'error':
+        return 'error';
+      default:
+        return 'initialize';
+    }
+  }
+  
+  private getFileNameForStage(stage: 'download' | 'parse' | 'initialize' | 'ready' | 'error'): string {
+    switch (stage) {
+      case 'download':
+        return 'Downloading model files...';
+      case 'parse':
+        return 'Parsing model files...';
+      case 'initialize':
+        return 'Initializing model...';
+      case 'ready':
+        return 'Model ready';
+      case 'error':
+        return 'Error loading model';
+      default:
+        return 'Processing...';
+    }
+  }
+  
+  private formatTime(seconds: number): string {
+    if (seconds < 60) {
+      return `${Math.ceil(seconds)}s`;
+    } else if (seconds < 3600) {
+      const minutes = Math.ceil(seconds / 60);
+      return `${minutes}m`;
+    } else {
+      const hours = Math.ceil(seconds / 3600);
+      return `${hours}h`;
     }
   }
 

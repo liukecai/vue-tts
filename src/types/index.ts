@@ -34,9 +34,24 @@ export interface WhisperModelConfig {
 }
 
 export interface ModelLoadProgress {
-  status: 'idle' | 'downloading' | 'loading' | 'ready' | 'error';
+  status: 'idle' | 'downloading' | 'loading' | 'ready' | 'error' | 'progress';
   progress: number;
   file?: string;
+  stage?: 'download' | 'parse' | 'initialize' | 'ready' | 'error';
+  fileName?: string;
+  downloadSpeed?: string;
+  estimatedTime?: string;
+  loaded?: number;
+  total?: number;
+  files?: FileProgress[];
+}
+
+export interface FileProgress {
+  name: string;
+  progress: number;
+  loaded: number;
+  total: number;
+  status: 'pending' | 'loading' | 'complete' | 'error';
 }
 
 export interface InferenceProgress {
