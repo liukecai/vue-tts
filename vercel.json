@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "git submodule update --init --recursive && npm run build",
-  "installCommand": "git submodule update --init --recursive && npm ci",
+  "installCommand": "git submodule sync && git submodule update --init --recursive && npm ci",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
     "api/**/*.js": {
