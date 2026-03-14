@@ -40,3 +40,9 @@ jobs:
         run: |
           npm install
           npm run build
+          
+          mkdir -p dist/models
+          cp -r public/models/* dist/models/
+          
+          echo "✅ Verified: Models copied to dist"
+          ls -R dist/models
