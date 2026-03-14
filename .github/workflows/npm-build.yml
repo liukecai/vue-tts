@@ -46,3 +46,10 @@ jobs:
           
           echo "✅ Verified: Models copied to dist"
           ls -R dist/models
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-dist
+          path: dist/  # 这里指向你 build 出来的文件夹
+          retention-days: 1 # 自动保留 1 天
