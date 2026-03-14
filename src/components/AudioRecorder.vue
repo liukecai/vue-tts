@@ -1,10 +1,34 @@
 <template>
   <div class="audio-recorder">
+    <div v-if="permissionError" class="error-message">
+      <div class="error-icon">⚠️</div>
+      <div class="error-content">
+        <div class="error-title">无法访问麦克风</div>
+        <div class="error-text">{{ permissionError }}</div>
+      </div>
+    </div>
+
+    <div v-if="!isBrowserSupported" class="browser-warning">
+      <div class="warning-icon">🌐</div>
+      <div class="warning-content">
+        <div class="warning-title">浏览器不支持</div>
+        <div class="warning-text">您的浏览器不支持麦克风访问，请使用最新版本的 Chrome、Firefox、Safari 或 Edge 浏览器</div>
+      </div>
+    </div>
+
+    <div v-if="permissionStatus && permissionStatus !== 'granted'" class="permission-status">
+      <div class="status-icon">{{ getPermissionIcon(permissionStatus) }}</div>
+      <div class="status-content">
+        <div class="status-title">{{ getPermissionTitle(permissionStatus) }}</div>
+        <div class="status-text">{{ getPermissionText(permissionStatus) }}</div>
+      </div>
+    </div>
+
     <div class="recorder-controls">
       <button
         v-if="!state.isRecording && !audioBlob"
         @click="startRecording"
-        :disabled="isLoading"
+        :disabled="isLoading || !isBrowserSupported"
         class="btn btn-primary"
       >
         <span class="icon">🎤</span>
@@ -127,7 +151,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue';
-import { audioRecorderService } from '../services/audioRecorder';
+import { audioRecorderService, type PermissionState } from '../services/audioRecorder';
 import type { AudioRecorderState } from '../types';
 
 const props = defineProps<{
@@ -149,6 +173,9 @@ const state = ref<AudioRecorderState>({
 });
 
 const isLoading = ref(false);
+const permissionError = ref('');
+const permissionStatus = ref<PermissionState | null>(null);
+const isBrowserSupported = ref(true);
 
 const playbackState = ref({
   isPlaying: false,
@@ -166,17 +193,75 @@ const progressTrack = ref<HTMLElement | null>(null);
 
 const playbackProgress = ref(0);
 
+const getPermissionIcon = (status: PermissionState): string => {
+  switch (status) {
+    case 'denied':
+      return '🔒';
+    case 'prompt':
+      return '🎤';
+    case 'unsupported':
+      return '❌';
+    default:
+      return 'ℹ️';
+  }
+};
+
+const getPermissionTitle = (status: PermissionState): string => {
+  switch (status) {
+    case 'denied':
+      return '麦克风权限被拒绝';
+    case 'prompt':
+      return '需要麦克风权限';
+    case 'unsupported':
+      return '不支持';
+    default:
+      return '权限状态';
+  }
+};
+
+const getPermissionText = (status: PermissionState): string => {
+  switch (status) {
+    case 'denied':
+      return '请在浏览器设置中允许麦克风访问，然后刷新页面重试';
+    case 'prompt':
+      return '点击"开始录音"按钮，浏览器将请求麦克风权限';
+    case 'unsupported':
+      return '您的浏览器不支持麦克风访问';
+    default:
+      return '';
+  }
+};
+
+const checkPermission = async () => {
+  isBrowserSupported.value = audioRecorderService.isBrowserSupported();
+  if (!isBrowserSupported.value) {
+    return;
+  }
+
+  try {
+    permissionStatus.value = await audioRecorderService.checkMicrophonePermission();
+  } catch (error) {
+    console.error('Failed to check permission:', error);
+  }
+};
+
 const startRecording = async () => {
   try {
     isLoading.value = true;
+    permissionError.value = '';
     stopPlayback();
+    
     await audioRecorderService.startRecording();
+    
+    permissionStatus.value = 'granted';
     state.value = audioRecorderService.getState();
     console.log('recording started');
     emit('recordingStarted');
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to start recording:', error);
-    alert('无法访问麦克风，请检查权限设置');
+    permissionError.value = error.message || '无法访问麦克风，请检查权限设置';
+    
+    await checkPermission();
   } finally {
     isLoading.value = false;
   }
@@ -352,6 +437,8 @@ watch(() => props.audioBlob, (newBlob) => {
 });
 
 onMounted(() => {
+  checkPermission();
+  
   audioRecorderService.on('stateChange', (newState: AudioRecorderState) => {
     state.value = newState;
   });
@@ -382,6 +469,111 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 1.5rem;
   align-items: center;
+}
+
+.error-message {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 600px;
+}
+
+.error-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.error-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.error-title {
+  font-weight: 600;
+  color: #ef4444;
+  font-size: 1rem;
+}
+
+.error-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.browser-warning {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 600px;
+}
+
+.warning-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.warning-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.warning-title {
+  font-weight: 600;
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.warning-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.permission-status {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 0.75rem;
+  backdrop-filter: blur(10px);
+  width: 100%;
+  max-width: 600px;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.status-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.status-title {
+  font-weight: 600;
+  color: #667eea;
+  font-size: 1rem;
+}
+
+.status-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 
 .recorder-controls {

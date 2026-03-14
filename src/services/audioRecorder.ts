@@ -1,5 +1,7 @@
 import type { AudioRecorderState } from '../types';
 
+export type PermissionState = 'granted' | 'denied' | 'prompt' | 'unsupported';
+
 export class AudioRecorderService {
   private mediaRecorder: MediaRecorder | null = null;
   private audioChunks: Blob[] = [];
@@ -15,9 +17,53 @@ export class AudioRecorderService {
 
   private listeners: Map<string, Set<Function>> = new Map();
 
+  isBrowserSupported(): boolean {
+    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  }
+
+  async checkMicrophonePermission(): Promise<PermissionState> {
+    if (!this.isBrowserSupported()) {
+      return 'unsupported';
+    }
+
+    try {
+      const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      return permissionStatus.state as PermissionState;
+    } catch (error) {
+      console.warn('[AudioRecorder] Permission query not supported, assuming prompt:', error);
+      return 'prompt';
+    }
+  }
+
+  async requestMicrophonePermission(): Promise<MediaStream> {
+    if (!this.isBrowserSupported()) {
+      throw new Error('您的浏览器不支持麦克风访问，请使用最新版本的 Chrome、Firefox、Safari 或 Edge 浏览器');
+    }
+
+    try {
+      return await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error: any) {
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        throw new Error('麦克风权限被拒绝。请在浏览器设置中允许麦克风访问，然后刷新页面重试');
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        throw new Error('未找到麦克风设备，请检查您的麦克风是否已连接');
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        throw new Error('无法访问麦克风，可能被其他应用占用');
+      } else if (error.name === 'OverconstrainedError' || error.name === 'ConstraintNotSatisfiedError') {
+        throw new Error('麦克风不支持所需的音频格式');
+      } else if (error.name === 'TypeError') {
+        throw new Error('无效的音频约束条件');
+      } else if (error.name === 'SecurityError') {
+        throw new Error('安全错误：请确保使用 HTTPS 协议访问本应用');
+      } else {
+        throw new Error(`无法访问麦克风：${error.message || '未知错误'}`);
+      }
+    }
+  }
+
   async startRecording(): Promise<void> {
     try {
-      this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.stream = await this.requestMicrophonePermission();
       
       let mimeType = 'audio/webm;codecs=opus';
       
@@ -62,7 +108,7 @@ export class AudioRecorderService {
       this.emit('start');
     } catch (error) {
       console.error('Error starting recording:', error);
-      throw new Error('Failed to access microphone');
+      throw error;
     }
   }
 
