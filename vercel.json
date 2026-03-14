@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "installCommand": "git submodule sync && git submodule update --init --recursive && npm ci",
+  "installCommand": "chmod +x download-models.sh && ./download-models.sh && npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
