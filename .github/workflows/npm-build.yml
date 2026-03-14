@@ -18,16 +18,10 @@ jobs:
           lfs: true
           fetch-depth: 0
 
-      - name: Deep LFS Pull for Submodules
-        run: |
-          # 这一步确保子模块不仅代码到位，LFS 指针也被替换为实体文件
-          git submodule update --init --recursive
-          git submodule foreach --recursive 'git lfs install --local && git lfs pull'
-
       - name: Verify Model Files
         run: |
           # 使用通配符检查所有模型文件
-          for file in $(find public/models -name "*.bin" -o -name "*.onnx"); do
+          for file in $(find submodules -name "*.bin" -o -name "*.onnx"); do
             size=$(stat -c%s "$file")
             echo "Checking $file: $size bytes"
             if [ $size -lt 1000 ]; then
@@ -40,13 +34,6 @@ jobs:
         run: |
           npm install
           npm run build
-          
-          mkdir -p dist/models/whisper-tiny/onnx
-          cp public/models/whisper-tiny/onnx/encoder_model.onnx dist/models/whisper-tiny/onnx/
-          cp public/models/whisper-tiny/onnx/decoder_model_merged.onnx dist/models/whisper-tiny/onnx/
-          
-          echo "✅ Verified: Models copied to dist"
-          ls -R dist/models
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
