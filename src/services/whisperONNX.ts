@@ -1,4 +1,4 @@
-import { pipeline, env } from '@xenova/transformers';
+import { pipeline, env } from '@huggingface/transformers';
 import type { WhisperModelConfig, ModelLoadProgress, InferenceProgress, RecognitionResult } from '../types';
 
 env.allowLocalModels = false;
@@ -6,17 +6,13 @@ env.useBrowserCache = true;
 
 export class WhisperTransformersService {
   private pipeline: any;
-  private config: WhisperModelConfig;
-  private loadProgressCallback?: (progress: ModelLoadProgress) => void;
   private inferenceProgressCallback?: (progress: InferenceProgress) => void;
 
-  constructor(config: WhisperModelConfig) {
-    this.config = config;
+  constructor(_config: WhisperModelConfig) {
+    // Config parameter kept for API compatibility
   }
 
   async loadModel(onProgress?: (progress: ModelLoadProgress) => void): Promise<void> {
-    this.loadProgressCallback = onProgress;
-
     try {
       console.log('[WhisperTransformers] Starting to load model...');
       console.log('[WhisperTransformers] Current pipeline state:', this.pipeline);
@@ -27,7 +23,7 @@ export class WhisperTransformersService {
         file: 'Loading pipeline...'
       });
 
-      this.pipeline = await pipeline('automatic-speech-recognition', 'Xenova/whisper-base', {
+      this.pipeline = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
         progress_callback: (progress: any) => {
           console.log('[WhisperTransformers] Model load progress:', progress);
           onProgress?.({
@@ -35,8 +31,7 @@ export class WhisperTransformersService {
             progress: progress.progress || 0,
             file: progress.file
           });
-        },
-        quantized: false
+        }
       });
 
       console.log('[WhisperTransformers] Model loaded successfully:', this.pipeline);
@@ -169,7 +164,6 @@ export class WhisperTransformersService {
   cleanup(): void {
     this.pipeline = null;
     this.inferenceProgressCallback = undefined;
-    this.loadProgressCallback = undefined;
   }
 }
 
