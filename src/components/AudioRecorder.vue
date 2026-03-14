@@ -190,6 +190,7 @@ const audioContext = ref<AudioContext | null>(null);
 const analyser = ref<AnalyserNode | null>(null);
 const visualizerCanvas = ref<HTMLCanvasElement | null>(null);
 const progressTrack = ref<HTMLElement | null>(null);
+const audioUrl = ref<string | null>(null);
 
 const playbackProgress = ref(0);
 
@@ -291,19 +292,14 @@ const startNewRecording = async () => {
 };
 
 const playAudio = async () => {
-  if (!props.audioBlob) return;
+  if (!props.audioBlob || !audioElement.value) return;
 
   try {
     playbackState.value.isLoading = true;
     
-    const audioUrl = URL.createObjectURL(props.audioBlob);
-    
-    if (audioElement.value) {
-      audioElement.value.src = audioUrl;
-      await audioElement.value.play();
-      playbackState.value.isPlaying = true;
-      playbackState.value.isPaused = false;
-    }
+    await audioElement.value.play();
+    playbackState.value.isPlaying = true;
+    playbackState.value.isPaused = false;
   } catch (error) {
     console.error('Failed to play audio:', error);
     alert('播放音频失败，请重试');
@@ -360,17 +356,20 @@ const setupAudioContext = async () => {
   if (!props.audioBlob) return;
 
   try {
+    if (audioUrl.value) {
+      URL.revokeObjectURL(audioUrl.value);
+    }
+
+    audioUrl.value = URL.createObjectURL(props.audioBlob);
+    const audio = new Audio(audioUrl.value);
+    audioElement.value = audio;
+
     audioContext.value = new (window.AudioContext || (window as any).webkitAudioContext)();
     analyser.value = audioContext.value.createAnalyser();
     analyser.value.fftSize = 256;
 
-    const audioUrl = URL.createObjectURL(props.audioBlob);
-    const audio = new Audio(audioUrl);
-    audioElement.value = audio;
-
     const source = audioContext.value.createMediaElementSource(audio);
     source.connect(analyser.value);
-    analyser.value.connect(audioContext.value.destination);
 
     audio.addEventListener('loadedmetadata', () => {
       playbackState.value.duration = audio.duration;
@@ -457,8 +456,9 @@ onUnmounted(() => {
     audioContext.value.close();
   }
   
-  if (audioElement.value) {
-    URL.revokeObjectURL(audioElement.value.src);
+  if (audioUrl.value) {
+    URL.revokeObjectURL(audioUrl.value);
+    audioUrl.value = null;
   }
 });
 </script>
