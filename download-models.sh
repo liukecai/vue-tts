@@ -7,7 +7,7 @@ mkdir -p public/models/whisper-tiny/onnx
 MODEL_URL="https://huggingface.co/Xenova/whisper-tiny/resolve/main/onnx"
 
 # Download essential model files
-files=("encoder_model.onnx" "decoder_model.onnx")
+files=("encoder_model.onnx" "decoder_model_merged.onnx")
 
 for file in "${files[@]}"; do
     echo "Downloading $file..."
