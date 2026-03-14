@@ -172,6 +172,7 @@ const startRecording = async () => {
     stopPlayback();
     await audioRecorderService.startRecording();
     state.value = audioRecorderService.getState();
+    console.log('recording started');
     emit('recordingStarted');
   } catch (error) {
     console.error('Failed to start recording:', error);
@@ -199,9 +200,9 @@ const resumeRecording = () => {
   emit('recordingResumed');
 };
 
-const startNewRecording = () => {
+const startNewRecording = async () => {
   stopPlayback();
-  emit('recordingStarted');
+  await startRecording();
 };
 
 const playAudio = async () => {
