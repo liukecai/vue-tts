@@ -16,21 +16,27 @@ jobs:
         with:
           submodules: recursive
           lfs: true
-          # 确保获取完整的 git 历史，有时对 LFS 这里的 fetch-depth 有要求
           fetch-depth: 0
 
-      # 【关键修正】显式拉取所有子模块的 LFS 文件
-      - name: Pull LFS objects in submodules
-        run: git submodule foreach --recursive 'git lfs pull'
+      - name: Deep LFS Pull for Submodules
+        run: |
+          # 这一步确保子模块不仅代码到位，LFS 指针也被替换为实体文件
+          git submodule update --init --recursive
+          git submodule foreach --recursive 'git lfs install --local && git lfs pull'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm' # 开启缓存，加快后续构建速度
+      - name: Verify Model Files
+        run: |
+          # 使用通配符检查所有模型文件
+          for file in $(find public/models -name "*.bin" -o -name "*.onnx"); do
+            size=$(stat -c%s "$file")
+            echo "Checking $file: $size bytes"
+            if [ $size -lt 1000 ]; then
+              echo "❌ Error: $file is a pointer file!"
+              exit 1
+            fi
+          done
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build
-        run: npm run build
+      - name: Install & Build
+        run: |
+          npm install
+          npm run build
