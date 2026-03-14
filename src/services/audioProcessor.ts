@@ -116,8 +116,7 @@ export class AudioPreprocessor {
         const mel = this.hzToMel(hz);
 
         if (mel >= melMin && mel <= melMax) {
-          const melIndex = Math.floor((mel - melMin) / melStep);
-          const index = Math.min(melIndex, this.nMelFilters - 1);
+          const melIndex = Math.min(Math.floor((mel - melMin) / melStep), this.nMelFilters - 1);
           energy += fftResult[k] * (1 - Math.abs(mel - (melMin + melIndex * melStep)));
         }
       }

@@ -34,7 +34,7 @@ export interface WhisperModelConfig {
 }
 
 export interface ModelLoadProgress {
-  status: 'downloading' | 'loading' | 'ready' | 'error';
+  status: 'idle' | 'downloading' | 'loading' | 'ready' | 'error';
   progress: number;
   file?: string;
 }

@@ -101,7 +101,7 @@ const processingProgress = ref(0);
 const processingStage = ref('');
 const isError = ref(false);
 const errorMessage = ref('');
-const lastAudioBlob = ref<Blob | null>(null);
+const lastAudioBlob = ref<Blob | undefined>(undefined);
 
 const modelStatusText = computed(() => {
   switch (modelStatus.value.status) {
@@ -221,7 +221,7 @@ const onRecordAgain = () => {
   };
   isError.value = false;
   errorMessage.value = '';
-  lastAudioBlob.value = null;
+  lastAudioBlob.value = undefined;
 };
 
 onMounted(() => {

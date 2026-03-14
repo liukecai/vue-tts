@@ -316,6 +316,7 @@ const drawVisualizer = () => {
   const draw = () => {
     requestAnimationFrame(draw);
 
+    if (!analyser.value) return;
     analyser.value.getByteFrequencyData(dataArray);
 
     ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';

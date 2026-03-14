@@ -21,9 +21,9 @@
           <span class="stage-icon">{{ getStageIcon(processingStage) }}</span>
           <span class="stage-text">{{ getStageText(processingStage) }}</span>
         </div>
-        <div v-if="progress > 0" class="progress-bar">
+        <div v-if="progress !== undefined && progress > 0" class="progress-bar">
           <div class="progress-fill" :style="{ width: progress + '%' }"></div>
-          <span class="progress-text">{{ Math.round(progress) }}%</span>
+          <span class="progress-text">{{ Math.round(progress || 0) }}%</span>
         </div>
       </div>
 
