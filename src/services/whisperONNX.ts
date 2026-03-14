@@ -1,7 +1,7 @@
 import { pipeline, env } from '@huggingface/transformers';
 import type { WhisperModelConfig, ModelLoadProgress, InferenceProgress, RecognitionResult } from '../types';
 
-env.allowLocalModels = false;
+env.allowLocalModels = true;
 env.useBrowserCache = true;
 
 export class WhisperTransformersService {
@@ -23,7 +23,7 @@ export class WhisperTransformersService {
         file: 'Loading pipeline...'
       });
 
-      this.pipeline = await pipeline('automatic-speech-recognition', 'Xenova/whisper-tiny', {
+      this.pipeline = await pipeline('automatic-speech-recognition', '/models/whisper-tiny', {
         progress_callback: (progress: any) => {
           console.log('[WhisperTransformers] Model load progress:', progress);
           onProgress?.({
