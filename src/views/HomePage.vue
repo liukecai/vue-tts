@@ -11,9 +11,14 @@
         <p class="description">
           快速、准确的语音识别工具，支持多种语言，完全在浏览器端运行，保护您的隐私
         </p>
-        <router-link to="/voice-recognition" class="btn-primary">
-          开始录音识别
-        </router-link>
+        <div class="btn-group">
+          <router-link to="/voice-recognition" class="btn-primary">
+            开始录音识别
+          </router-link>
+          <router-link to="/realtime-voice" class="btn-secondary">
+            实时语音识别
+          </router-link>
+        </div>
       </div>
 
       <div class="features">
@@ -126,9 +131,35 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
+.btn-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
 .features {
@@ -195,9 +226,18 @@
     font-size: 1rem;
   }
   
-  .btn-primary {
+  .btn-group {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn-primary,
+  .btn-secondary {
     padding: 0.875rem 1.75rem;
     font-size: 1rem;
+    width: 100%;
+    max-width: 300px;
+    text-align: center;
   }
 }
 </style>
