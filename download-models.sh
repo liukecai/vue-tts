@@ -11,7 +11,7 @@ files=("encoder_model.onnx" "decoder_model.onnx")
 
 for file in "${files[@]}"; do
     echo "Downloading $file..."
-    wget -O "public/models/whisper-tiny/onnx/$file" "$MODEL_URL/$file"
+    curl -o "public/models/whisper-tiny/onnx/$file" "$MODEL_URL/$file"
     if [ $? -ne 0 ]; then
         echo "Failed to download $file"
         exit 1
