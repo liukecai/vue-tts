@@ -1,22 +1,36 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
-
 name: Node.js Package
 
 on:
   release:
     types: [created]
+  # 建议加上 push 触发，方便你在正式 Release 前测试 build 是否成功
+  push:
+    branches: [main] 
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           lfs: true
-      - uses: actions/setup-node@v4
+          # 确保获取完整的 git 历史，有时对 LFS 这里的 fetch-depth 有要求
+          fetch-depth: 0
+
+      # 【关键修正】显式拉取所有子模块的 LFS 文件
+      - name: Pull LFS objects in submodules
+        run: git submodule foreach --recursive 'git lfs pull'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
-      - run: npm run build
+          cache: 'npm' # 开启缓存，加快后续构建速度
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
