@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": "npm install && chmod +x download-models.sh && ./download-models.sh",
-  "buildCommand": "npm run build",
+  "buildCommand": "npx --yes vite build",
   "outputDirectory": "dist",
   "build": {
     "env": {
