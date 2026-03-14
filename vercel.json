@@ -3,11 +3,6 @@
   "installCommand": "chmod +x download-models.sh && ./download-models.sh && npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "functions": {
-    "api/**/*.js": {
-      "maxDuration": 10
-    }
-  },
   "build": {
     "env": {
       "NODE_ENV": "production"
