@@ -1,22 +1,23 @@
 <template>
   <div class="realtime-voice-recognition">
     <header class="header">
-      <h1>🎙️ 实时语音识别</h1>
-      <p class="subtitle">实时将语音转换为文字</p>
+      <div class="header-content">
+        <router-link to="/" class="back-link">
+          ← 返回首页
+        </router-link>
+        <h1>🎙️ 实时语音识别</h1>
+        <p class="subtitle">实时将语音转换为文字</p>
+      </div>
     </header>
 
     <main class="main">
       <div class="container">
-        <div class="status-section">
-          <div class="status-indicator" :class="{ 'active': isRecording }"></div>
+        <ModelLoadingProgress v-if="!isModelLoaded" :model-status="modelStatus" />
+        <div class="status-section" v-else>
+          <div class="status-indicator" :class="{ 'active': isRecording || isModelLoaded }"></div>
           <p class="status-text">{{ statusText }}</p>
-          <div v-if="!isModelLoaded" class="progress-section">
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: loadProgress + '%' }"></div>
-            </div>
-            <p class="progress-text">{{ Math.round(loadProgress) }}%</p>
-          </div>
         </div>
+
 
         <div class="result-section">
           <h2>识别结果</h2>
@@ -70,6 +71,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { createRealtimeWhisperService } from '../services/realtimeWhisperService';
+import ModelLoadingProgress from '../components/ModelLoadingProgress.vue';
 import type { WhisperModelConfig, ModelLoadProgress } from '../types';
 
 // 状态管理
@@ -78,7 +80,14 @@ const statusText = ref('加载模型中...');
 const recognitionResult = ref('');
 const resultContent = ref<HTMLElement>();
 const isModelLoaded = ref(false);
-const loadProgress = ref(0);
+const modelStatus = ref<ModelLoadProgress>({
+  status: 'idle',
+  progress: 0,
+  stage: 'initialize',
+  fileName: '准备加载模型...',
+  downloadSpeed: undefined,
+  estimatedTime: undefined
+});
 
 // 实时语音识别服务
 const whisperConfig: WhisperModelConfig = {
@@ -93,12 +102,10 @@ const realtimeWhisperService = createRealtimeWhisperService(whisperConfig);
 const loadModel = async () => {
   try {
     await realtimeWhisperService.loadModel((progress: ModelLoadProgress) => {
-      if (progress.status === 'loading' || progress.status === 'downloading') {
-        loadProgress.value = progress.progress;
-        statusText.value = `加载中: ${progress.file}`;
-      } else if (progress.status === 'ready') {
+      modelStatus.value = progress;
+      if (progress.status === 'ready') {
         isModelLoaded.value = true;
-        statusText.value = '就绪';
+        statusText.value = '模型已就绪';
       } else if (progress.status === 'error') {
         statusText.value = '模型加载失败';
       }
@@ -151,7 +158,7 @@ const stopRecognition = () => {
 // 重置识别结果
 const resetRecognition = () => {
   recognitionResult.value = '';
-  statusText.value = '就绪';
+  statusText.value = '模型已就绪';
 };
 
 // 组件挂载时加载模型
@@ -180,6 +187,27 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.back-link {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.back-link:hover {
+  color: #764ba2;
 }
 
 .header h1 {
@@ -257,33 +285,10 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.8);
 }
 
-.progress-section {
-  margin-top: 1rem;
-  width: 100%;
+.model-loading-progress {
+  margin-bottom: 2rem;
 }
 
-.progress-bar {
-  width: 100%;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 4px;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  margin: 0;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: right;
-}
 
 .result-section {
   margin-bottom: 2rem;
@@ -402,6 +407,19 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .back-link {
+    position: static;
+    transform: none;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+  
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
   .container {
     padding: 1.5rem;
   }
