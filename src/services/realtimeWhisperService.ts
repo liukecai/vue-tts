@@ -1,4 +1,4 @@
-import type { WhisperModelConfig, ModelLoadProgress, InferenceProgress, RecognitionResult } from '../types';
+import type { WhisperModelConfig, ModelLoadProgress, InferenceProgress } from '../types';
 import { realtimeAudioService } from './realtimeAudioService';
 
 export class RealtimeWhisperService {
@@ -84,9 +84,9 @@ export class RealtimeWhisperService {
     }
 
     return new Promise((resolve, reject) => {
-      const originalOnMessage: ((event: MessageEvent<any>) => void) | null = this.worker.onmessage;
+      const originalOnMessage: ((event: MessageEvent<any>) => void) | null = this.worker!.onmessage;
 
-      this.worker.onmessage = (event: MessageEvent<any>) => {
+      this.worker!.onmessage = (event: MessageEvent<any>) => {
         const { type, payload } = event.data;
 
         if (type === 'LOAD_PROGRESS') {
@@ -107,7 +107,7 @@ export class RealtimeWhisperService {
         }
       };
 
-      this.worker.postMessage({
+      this.worker!.postMessage({
         type: 'LOAD_MODEL',
         payload: {}
       });

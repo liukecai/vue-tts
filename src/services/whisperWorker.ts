@@ -27,7 +27,7 @@ self.onmessage = async (event) => {
   } catch (error) {
     self.postMessage({
       type: 'ERROR',
-      payload: { error: error.message || 'Unknown error' }
+      payload: { error: (error as Error).message || 'Unknown error' }
     });
   }
 };
