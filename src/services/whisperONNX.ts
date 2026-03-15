@@ -11,9 +11,10 @@ export class WhisperTransformersService {
   private lastProgressUpdate: number = 0;
   private lastProgressValue: number = 0;
   private fileProgressMap: Map<string, FileProgress> = new Map();
+  private model: string;
 
-  constructor(_config: WhisperModelConfig) {
-    // Config parameter kept for API compatibility
+  constructor(config: WhisperModelConfig) {
+    this.model = config.model || 'whisper-base';
   }
 
   async loadModel(onProgress?: (progress: ModelLoadProgress) => void): Promise<void> {
@@ -39,8 +40,8 @@ export class WhisperTransformersService {
       
       await new Promise(resolve => setTimeout(resolve, 500));
 
-      this.pipeline = await pipeline('automatic-speech-recognition', '/models/whisper-base', {
-        device: 'webgpu',
+      this.pipeline = await pipeline('automatic-speech-recognition', `/models/${this.model}`, {
+        device: 'wasm',
         dtype: 'fp16',
         progress_callback: (progress: any) => {
           console.log('[WhisperTransformers] Model load progress:', progress);

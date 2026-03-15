@@ -8,7 +8,7 @@ export class SherpaOnnxService {
     try {
       // 初始化本地whisper模型
       const config: WhisperModelConfig = {
-        model: 'whisper-base',
+        model: 'SenseVoiceSmall-onnx',
         language: 'auto',
         task: 'transcribe'
       };

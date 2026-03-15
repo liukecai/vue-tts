@@ -1,0 +1,38 @@
+{
+  "ir_version": 10,
+  "producer_name": "pytorch",
+  "producer_version": "2.9.1+cpu",
+  "model_version": 0,
+  "num_nodes": 2497,
+  "num_inputs": 4,
+  "num_outputs": 2,
+  "num_initializers": 935,
+  "inputs": [
+    {
+      "name": "speech",
+      "type": "tensor_type {\n  elem_type: 1\n  shape {\n    dim {\n      dim_value: 1\n    }\n    dim {\n      dim_value: 1\n    }\n    dim {\n      dim_param: \"sequence_length\"\n    }\n    dim {\n      dim_value: 560\n    }\n  }\n}\n"
+    },
+    {
+      "name": "speech_lengths",
+      "type": "tensor_type {\n  elem_type: 7\n  shape {\n    dim {\n      dim_value: 1\n    }\n    dim {\n      dim_value: 1\n    }\n  }\n}\n"
+    },
+    {
+      "name": "language",
+      "type": "tensor_type {\n  elem_type: 7\n  shape {\n    dim {\n      dim_value: 1\n    }\n    dim {\n      dim_value: 1\n    }\n  }\n}\n"
+    },
+    {
+      "name": "textnorm",
+      "type": "tensor_type {\n  elem_type: 7\n  shape {\n    dim {\n      dim_value: 1\n    }\n    dim {\n      dim_value: 1\n    }\n  }\n}\n"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "ctc_logits",
+      "type": "tensor_type {\n  elem_type: 1\n  shape {\n    dim {\n      dim_param: \"s37\"\n    }\n    dim {\n      dim_param: \"s5 + 4\"\n    }\n    dim {\n      dim_value: 25055\n    }\n  }\n}\n"
+    },
+    {
+      "name": "encoder_out_lens",
+      "type": "tensor_type {\n  elem_type: 6\n  shape {\n    dim {\n      dim_param: \"s37\"\n    }\n  }\n}\n"
+    }
+  ]
+}
