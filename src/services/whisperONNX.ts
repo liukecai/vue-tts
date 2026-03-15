@@ -40,6 +40,7 @@ export class WhisperTransformersService {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       this.pipeline = await pipeline('automatic-speech-recognition', '/models/whisper-tiny', {
+        dtype: 'q8',
         progress_callback: (progress: any) => {
           console.log('[WhisperTransformers] Model load progress:', progress);
           
