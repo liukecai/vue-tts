@@ -52,7 +52,6 @@ vue-tts/
 ├── public/
 │   ├── models/              # 模型文件目录
 │   │   └── whisper-base/    # Whisper Base 模型
-│   └── whisper-worker.js    # Web Worker 实现
 ├── package.json            # 项目配置和依赖
 ├── tsconfig.json           # TypeScript 配置
 ├── vite.config.ts          # Vite 配置
