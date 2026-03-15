@@ -96,6 +96,9 @@ npm run preview
 
 ## 🎯 技术实现
 
+### 参考项目
+- **[Xenova/whisper-web](https://github.com/xenova/whisper-web.git)** - 基于 Transformers.js 的浏览器端语音识别实现，本项目参考了其核心技术架构
+
 ### 核心服务 - Whisper Worker
 
 ```typescript
