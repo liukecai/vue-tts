@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../views/HomePage.vue';
 import VoiceRecognitionPage from '../views/VoiceRecognitionPage.vue';
 import RealtimeVoiceRecognitionPage from '../views/RealtimeVoiceRecognitionPage.vue';
+import VoiceIntentRecognitionPage from '../views/VoiceIntentRecognitionPage.vue';
 
 const routes = [
   {
@@ -18,6 +19,11 @@ const routes = [
     path: '/realtime-voice',
     name: 'RealtimeVoice',
     component: RealtimeVoiceRecognitionPage
+  },
+  {
+    path: '/voice-intent',
+    name: 'VoiceIntent',
+    component: VoiceIntentRecognitionPage
   }
 ];
 

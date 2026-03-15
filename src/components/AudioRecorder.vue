@@ -370,6 +370,7 @@ const setupAudioContext = async () => {
 
     const source = audioContext.value.createMediaElementSource(audio);
     source.connect(analyser.value);
+    analyser.value.connect(audioContext.value.destination);
 
     audio.addEventListener('loadedmetadata', () => {
       playbackState.value.duration = audio.duration;

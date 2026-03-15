@@ -18,6 +18,9 @@
           <router-link to="/realtime-voice" class="btn-secondary">
             实时语音识别
           </router-link>
+          <router-link to="/voice-intent" class="btn-secondary">
+            语音意图识别
+          </router-link>
         </div>
       </div>
 
