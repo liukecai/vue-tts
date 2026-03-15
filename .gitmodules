@@ -1,3 +1,0 @@
-[submodule "public/models/whisper-tiny"]
-	path = submodules/whisper-tiny
-	url = https://huggingface.co/Xenova/whisper-tiny

@@ -36,6 +36,10 @@
 - **音频录制**: MediaRecorder API
 - **路由管理**: Vue Router
 
+### 模型资源
+- **[onnx-community/whisper-base](https://huggingface.co/onnx-community/whisper-base)** - 用于浏览器兼容的ONNX格式Whisper Base模型
+- **[Xenova/whisper-tiny](https://huggingface.co/Xenova/whisper-tiny)** - 轻量级的Whisper Tiny模型，适合快速识别
+
 ## 📁 项目结构
 
 ```
