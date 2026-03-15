@@ -114,7 +114,7 @@ export class RealtimeWhisperService {
     });
   }
 
-  async start(language: string = 'zh'): Promise<void> {
+  async start(): Promise<void> {
     if (!this.isModelLoaded) {
       throw new Error('Model not loaded');
     }
