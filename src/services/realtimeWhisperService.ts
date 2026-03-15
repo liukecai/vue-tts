@@ -84,9 +84,9 @@ export class RealtimeWhisperService {
     }
 
     return new Promise((resolve, reject) => {
-      const originalOnMessage = this.worker?.onmessage;
+      const originalOnMessage: ((event: MessageEvent<any>) => void) | null = this.worker.onmessage;
 
-      this.worker!.onmessage = (event) => {
+      this.worker.onmessage = (event: MessageEvent<any>) => {
         const { type, payload } = event.data;
 
         if (type === 'LOAD_PROGRESS') {
@@ -102,7 +102,7 @@ export class RealtimeWhisperService {
         } else if (type === 'ERROR') {
           this.worker!.onmessage = originalOnMessage;
           reject(new Error(payload.error));
-        } else if (originalOnMessage) {
+        } else if (originalOnMessage !== null) {
           originalOnMessage(event);
         }
       };
