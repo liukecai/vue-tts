@@ -1,0 +1,13 @@
+- [x] ModelLoadProgress 类型已扩展，包含 stage、fileName、downloadSpeed、estimatedTime 字段
+- [x] WhisperTransformersService 的 loadModel 方法已增强，提供详细的进度信息
+- [x] 进度回调包含下载速度和预计剩余时间的计算
+- [x] App.vue 中的 model-status 区域显示当前加载的文件名
+- [x] App.vue 中的 model-status 区域显示加载速度
+- [x] App.vue 中的 model-status 区域显示预计剩余时间
+- [x] 进度条具有平滑的动画效果
+- [x] 状态指示器在不同阶段有明显的视觉差异
+- [x] 模型下载阶段显示正确的进度信息
+- [x] 模型加载阶段显示正确的进度信息
+- [x] 模型就绪状态显示正确的指示
+- [x] 错误状态显示正确的错误信息
+- [x] 进度信息实时更新且准确

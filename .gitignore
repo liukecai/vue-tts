@@ -25,3 +25,5 @@ whisper-web
 *.njsproj
 *.sln
 *.sw?
+
+venv/
