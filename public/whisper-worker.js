@@ -31,7 +31,9 @@ async function loadModel(config) {
   try {
     self.postMessage({ type: 'loadProgress', data: { status: 'loading', progress: 0, file: 'Initializing...' } });
 
-    transcriber = await pipeline('automatic-speech-recognition', '/models/whisper-tiny', {
+    transcriber = await pipeline('automatic-speech-recognition', '/models/whisper-base', {
+      device: 'webgpu',
+      model_file_name: 'decoder_model_merged_q4',
       progress_callback: (progress) => {
         self.postMessage({ type: 'loadProgress', data: progress });
       }

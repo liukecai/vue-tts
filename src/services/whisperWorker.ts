@@ -47,7 +47,9 @@ async function handleLoadModel(payload: any) {
       }
     });
 
-    transcriber = await pipeline('automatic-speech-recognition', '/models/whisper-tiny', {
+    transcriber = await pipeline('automatic-speech-recognition', '/models/whisper-base', {
+      device: 'webgpu',
+      dtype: 'q4',
       progress_callback: (progress: any) => {
         self.postMessage({
           type: 'LOAD_PROGRESS',
