@@ -21,7 +21,12 @@ export class RealtimeAudioService {
   };
 
   isBrowserSupported(): boolean {
-    return !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.AudioContext && AudioWorkletNode);
+    return typeof navigator !== 'undefined' &&
+           !!navigator.mediaDevices &&
+           typeof navigator.mediaDevices.getUserMedia === 'function' &&
+           typeof window !== 'undefined' &&
+           typeof window.AudioContext === 'function' &&
+           typeof AudioWorkletNode === 'function';
   }
 
   async checkMicrophonePermission(): Promise<PermissionState> {
